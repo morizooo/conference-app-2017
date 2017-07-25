@@ -60,24 +60,6 @@
 
         </HorizontalScrollView>
 
-        <TextView
-                android:id="@+id/txt_date"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:layout_marginTop="48dp"
-                android:background="@drawable/bg_session_date"
-                android:paddingBottom="@dimen/space_4dp"
-                android:paddingEnd="@dimen/space_12dp"
-                android:paddingLeft="@dimen/space_12dp"
-                android:paddingRight="@dimen/space_12dp"
-                android:paddingStart="@dimen/space_12dp"
-                android:paddingTop="@dimen/space_4dp"
-                android:textAppearance="@style/TextSubheading"
-                android:textColor="@color/white"
-                android:visibility="gone"
-                />
-
         <FrameLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"

@@ -18,15 +18,11 @@ import java.util.Map;
 
 import javax.inject.Inject;
 
-import io.github.droidkaigi.confsched2017.BR;
-import io.github.droidkaigi.confsched2017.model.MySession;
 import io.github.droidkaigi.confsched2017.model.Room;
 import io.github.droidkaigi.confsched2017.model.Session;
-import io.github.droidkaigi.confsched2017.repository.sessions.MySessionsRepository;
 import io.github.droidkaigi.confsched2017.repository.sessions.SessionsRepository;
 import io.github.droidkaigi.confsched2017.util.DateUtil;
 import io.github.droidkaigi.confsched2017.view.helper.Navigator;
-import io.reactivex.Single;
 
 public class SessionsViewModel extends BaseObservable implements ViewModel {
 
@@ -34,17 +30,14 @@ public class SessionsViewModel extends BaseObservable implements ViewModel {
 
     private SessionsRepository sessionsRepository;
 
-    private MySessionsRepository mySessionsRepository;
-
     private List<Room> rooms;
 
     private List<Date> stimes;
 
     @Inject
-    SessionsViewModel(Navigator navigator, SessionsRepository sessionsRepository, MySessionsRepository mySessionsRepository) {
+    SessionsViewModel(Navigator navigator, SessionsRepository sessionsRepository) {
         this.navigator = navigator;
         this.sessionsRepository = sessionsRepository;
-        this.mySessionsRepository = mySessionsRepository;
     }
 
     @Override
@@ -52,29 +45,17 @@ public class SessionsViewModel extends BaseObservable implements ViewModel {
         // Do nothing
     }
 
-    public Single<List<SessionViewModel>> getSessions(Locale locale, Context context) {
-        return Single.zip(sessionsRepository.findAll(locale),
-                mySessionsRepository.findAll(),
-                (sessions, mySessions) -> {
-                    final Map<Integer, MySession> mySessionMap = new LinkedHashMap<>();
-                    for (MySession mySession : mySessions) {
-                        mySessionMap.put(mySession.session.id, mySession);
-                    }
+    public List<SessionViewModel> getSessions(Locale locale, Context context) {
 
-                    this.rooms = extractRooms(sessions);
-                    this.stimes = extractStimes(sessions);
+        List<Session> sessions = sessionsRepository.findAll(locale).blockingGet();
+        this.rooms = extractRooms(sessions);
+        this.stimes = extractStimes(sessions);
+        List<SessionViewModel> viewModels = Stream.of(sessions)
+                .map(session -> new SessionViewModel(
+                        session, context, navigator))
+                .toList();
 
-                    notifyPropertyChanged(BR.loadingVisibility);
-
-                    List<SessionViewModel> viewModels = Stream.of(sessions)
-                            .map(session -> {
-                                boolean isMySession = mySessionMap.containsKey(session.id);
-                                return new SessionViewModel(
-                                        session, context, navigator, rooms.size(), isMySession, mySessionsRepository);
-                            })
-                            .toList();
-                    return adjustViewModels(viewModels, context);
-                });
+        return adjustViewModels(viewModels, context);
     }
 
     private List<SessionViewModel> adjustViewModels(List<SessionViewModel> sessionViewModels, Context context) {

@@ -95,16 +95,8 @@ public class Session {
         return Type.SESSION.matches(type);
     }
 
-    public boolean isCeremony() {
-        return Type.CEREMONY.matches(type);
-    }
-
     public boolean isBreak() {
         return Type.BREAK.matches(type);
-    }
-
-    public boolean isDinner() {
-        return Type.DINNER.matches(type);
     }
 
     public boolean isLiveAt(Date when) {

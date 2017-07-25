@@ -13,13 +13,11 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.content.res.ResourcesCompat;
 import android.support.v7.widget.RecyclerView;
-import android.text.TextUtils;
 import android.view.Display;
 import android.view.GestureDetector;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -37,18 +35,11 @@ import io.github.droidkaigi.confsched2017.databinding.FragmentSessionsBinding;
 import io.github.droidkaigi.confsched2017.databinding.ViewSessionCellBinding;
 import io.github.droidkaigi.confsched2017.model.Room;
 import io.github.droidkaigi.confsched2017.util.ViewUtil;
-import io.github.droidkaigi.confsched2017.view.activity.MySessionsActivity;
-import io.github.droidkaigi.confsched2017.view.activity.SearchActivity;
 import io.github.droidkaigi.confsched2017.view.customview.ArrayRecyclerAdapter;
 import io.github.droidkaigi.confsched2017.view.customview.BindingHolder;
 import io.github.droidkaigi.confsched2017.view.customview.TouchlessTwoWayView;
 import io.github.droidkaigi.confsched2017.viewmodel.SessionViewModel;
 import io.github.droidkaigi.confsched2017.viewmodel.SessionsViewModel;
-import io.reactivex.android.schedulers.AndroidSchedulers;
-import io.reactivex.disposables.CompositeDisposable;
-import io.reactivex.disposables.Disposable;
-import io.reactivex.schedulers.Schedulers;
-import timber.log.Timber;
 
 public class SessionsFragment extends BaseFragment {
 
@@ -56,9 +47,6 @@ public class SessionsFragment extends BaseFragment {
 
     @Inject
     SessionsViewModel viewModel;
-
-    @Inject
-    CompositeDisposable compositeDisposable;
 
     private SessionsAdapter adapter;
 
@@ -95,19 +83,6 @@ public class SessionsFragment extends BaseFragment {
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.item_search:
-                startActivity(SearchActivity.createIntent(getActivity()));
-                break;
-            case R.id.item_my_sessions:
-                startActivity(MySessionsActivity.createIntent(getActivity()));
-                break;
-        }
-        return super.onOptionsItemSelected(item);
-    }
-
-    @Override
     public void onResume() {
         super.onResume();
         showSessions();
@@ -116,14 +91,12 @@ public class SessionsFragment extends BaseFragment {
     @Override
     public void onStop() {
         super.onStop();
-        compositeDisposable.clear();
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
         viewModel.destroy();
-        compositeDisposable.dispose();
     }
 
     private int getScreenWidth() {
@@ -134,14 +107,7 @@ public class SessionsFragment extends BaseFragment {
     }
 
     private void showSessions() {
-        Disposable disposable = viewModel.getSessions(Locale.getDefault(), getContext())
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(
-                        this::renderSessions,
-                        throwable -> Timber.tag(TAG).e(throwable, "Failed to show sessions.")
-                );
-        compositeDisposable.add(disposable);
+        this.renderSessions(viewModel.getSessions(Locale.getDefault(), getContext()));
     }
 
     private void initView() {
@@ -181,22 +147,6 @@ public class SessionsFragment extends BaseFragment {
                 return false;
             }
         });
-
-        binding.recyclerView.clearOnScrollListeners();
-        binding.recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
-            @Override
-            public void onScrollStateChanged(RecyclerView recyclerView, int scrollState) {
-                // Do nothing
-            }
-
-            @Override
-            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
-                SessionViewModel viewModel = adapter.getItem(binding.recyclerView.getFirstVisiblePosition());
-                if (!TextUtils.isEmpty(viewModel.getFormattedDate())) {
-                    binding.txtDate.setText(viewModel.getFormattedDate());
-                }
-            }
-        });
     }
 
     private void renderSessions(List<SessionViewModel> adjustedSessionViewModels) {
@@ -212,11 +162,6 @@ public class SessionsFragment extends BaseFragment {
         renderHeaderRow(rooms);
 
         adapter.reset(adjustedSessionViewModels);
-
-        if (TextUtils.isEmpty(binding.txtDate.getText())) {
-            binding.txtDate.setText(adjustedSessionViewModels.get(0).getFormattedDate());
-            binding.txtDate.setVisibility(View.VISIBLE);
-        }
     }
 
     private void renderHeaderRow(List<Room> rooms) {
@@ -295,12 +240,10 @@ public class SessionsFragment extends BaseFragment {
 
                 @Override
                 public void onLongPress(MotionEvent motionEvent) {
-                    // Do nothing
                 }
 
                 @Override
                 public boolean onFling(MotionEvent motionEvent, MotionEvent motionEvent1, float v, float v1) {
-                    // Do nothing
                     return false;
                 }
             });
