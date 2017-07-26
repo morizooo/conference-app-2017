@@ -22,11 +22,8 @@ import io.github.droidkaigi.confsched2017.model.Room;
 import io.github.droidkaigi.confsched2017.model.Session;
 import io.github.droidkaigi.confsched2017.repository.sessions.SessionsRepository;
 import io.github.droidkaigi.confsched2017.util.DateUtil;
-import io.github.droidkaigi.confsched2017.view.helper.Navigator;
 
 public class SessionsViewModel extends BaseObservable implements ViewModel {
-
-    private final Navigator navigator;
 
     private SessionsRepository sessionsRepository;
 
@@ -35,8 +32,7 @@ public class SessionsViewModel extends BaseObservable implements ViewModel {
     private List<Date> stimes;
 
     @Inject
-    SessionsViewModel(Navigator navigator, SessionsRepository sessionsRepository) {
-        this.navigator = navigator;
+    SessionsViewModel(SessionsRepository sessionsRepository) {
         this.sessionsRepository = sessionsRepository;
     }
 
@@ -51,8 +47,7 @@ public class SessionsViewModel extends BaseObservable implements ViewModel {
         this.rooms = extractRooms(sessions);
         this.stimes = extractStimes(sessions);
         List<SessionViewModel> viewModels = Stream.of(sessions)
-                .map(session -> new SessionViewModel(
-                        session, context, navigator))
+                .map(session -> new SessionViewModel(session, context))
                 .toList();
 
         return adjustViewModels(viewModels, context);

@@ -83,26 +83,6 @@ public class Session {
     @SerializedName("share_url")
     public String shareUrl;
 
-    private enum Type {
-        CEREMONY, SESSION, BREAK, DINNER;
-
-        boolean matches(String type) {
-            return name().equalsIgnoreCase(type);
-        }
-    }
-
-    public boolean isSession() {
-        return Type.SESSION.matches(type);
-    }
-
-    public boolean isBreak() {
-        return Type.BREAK.matches(type);
-    }
-
-    public boolean isLiveAt(Date when) {
-        return stime.before(when) && etime.after(when);
-    }
-
     @Override
     public boolean equals(Object o) {
         return o instanceof Session && ((Session) o).id == id || super.equals(o);
